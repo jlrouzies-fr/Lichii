@@ -44,10 +44,11 @@ public:
 
     /// Queue motion, DLSS evaluation and guest writeback for one frame. A false return leaves
     /// the guest dispatch in charge. The scheduler checks EvaluationFailed before skipping it.
+    /// jitter is the sub-pixel offset the scene's draws were rendered with (render pixels).
     bool Record(VkImageView color, VkImageView depth, VkImageView target, VkExtent2D extent,
                 VkExtent2D output_extent, VkExtent2D target_extent, const std::array<f32, 16>& current,
                 const std::array<f32, 16>& previous, const OcarinaActorMesh& mesh,
-                VkImage depth_image, u64 frame);
+                VkImage depth_image, std::array<f32, 2> jitter, u64 frame);
 
 private:
     struct Impl;

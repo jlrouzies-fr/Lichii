@@ -220,6 +220,8 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
     std::map<u32, QWidget*> hold_graphics;
     std::vector<QWidget*> hold_api;
     QCheckBox* frame_gen_checkbox = nullptr;
+    [[maybe_unused]] QVBoxLayout* nvidia_dlss_group = nullptr;
+    [[maybe_unused]] QCheckBox* nvidia_dlss_checkbox = nullptr;
 
     for (const auto setting : Settings::values.linkage.by_category[Settings::Category::Renderer]) {
 #ifndef HAS_RESHADE
@@ -229,7 +231,8 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
 #endif
 #ifndef EGLANTINE_STREAMLINE
         // Only builds with NVIDIA Streamline (Windows) can use it.
-        if (setting->Id() == Settings::values.nvidia_dlss.Id()) {
+        if (setting->Id() == Settings::values.nvidia_dlss.Id() ||
+            setting->Id() == Settings::values.nvidia_dlss_mode.Id()) {
             continue;
         }
 #endif
@@ -343,6 +346,14 @@ void ConfigureGraphics::Setup(const ConfigurationShared::Builder& builder) {
             panel->setVisible(widget->checkbox->isChecked());
             connect(widget->checkbox, &QCheckBox::toggled, panel, &QWidget::setVisible);
             hold_graphics.emplace(setting->Id(), group);
+            nvidia_dlss_group = group_layout;
+            nvidia_dlss_checkbox = widget->checkbox;
+        } else if (setting->Id() == Settings::values.nvidia_dlss_mode.Id() &&
+                   nvidia_dlss_group != nullptr) {
+            // The mode under the checkbox, shown while it is checked.
+            nvidia_dlss_group->insertWidget(1, widget);
+            widget->setVisible(nvidia_dlss_checkbox->isChecked());
+            connect(nvidia_dlss_checkbox, &QCheckBox::toggled, widget, &QWidget::setVisible);
 #endif
         } else if (setting->Id() == Settings::values.frame_gen.Id()) {
             frame_gen_checkbox = widget->checkbox;

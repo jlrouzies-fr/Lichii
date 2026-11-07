@@ -399,6 +399,15 @@ struct Values {
                                                        true};
     // NVIDIA DLSS (through NVIDIA Streamline) in place of a game's DLSS.
     SwitchableSetting<bool> nvidia_dlss{linkage, false, "nvidia_dlss", Category::Renderer};
+    // What NVIDIA DLSS does with a pass that already runs at the output size (Ocarina of Time's
+    // anti-aliasing with its Max Resolution add-on): upscale it, or anti-alias it in place (DLAA).
+    SwitchableSetting<NvidiaDlssMode, true> nvidia_dlss_mode{linkage,
+                                                             NvidiaDlssMode::SuperResolution,
+                                                             "nvidia_dlss_mode",
+                                                             Category::Renderer,
+                                                             Specialization::Default,
+                                                             true,
+                                                             true};
     SwitchableSetting<AspectRatio, true> aspect_ratio{linkage,
                                                       AspectRatio::R16_9,
                                                       "aspect_ratio",

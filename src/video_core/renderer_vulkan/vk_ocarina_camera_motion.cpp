@@ -689,7 +689,8 @@ VkImageView OcarinaLiveDlss::CompositedView() const {
 bool OcarinaLiveDlss::Record(VkImageView color, VkImageView depth, VkImageView target, VkExtent2D extent,
                             VkExtent2D output_extent, VkExtent2D target_extent,
                             const Matrix& current, const Matrix& previous,
-                            const OcarinaActorMesh& mesh, VkImage depth_image, u64 frame) {
+                            const OcarinaActorMesh& mesh, VkImage depth_image,
+                            std::array<f32, 2> jitter, u64 frame) {
     auto& state = *impl;
     if (state.last_frame == frame || state.upscaler.Failed()) {
         return false;
@@ -747,7 +748,7 @@ bool OcarinaLiveDlss::Record(VkImageView color, VkImageView depth, VkImageView t
                                COLOR_RANGE, VK_IMAGE_ASPECT_COLOR_BIT},
             .render_size = extent,
             .upscale_size = output_extent,
-            .jitter = {0.0f, 0.0f},
+            .jitter = jitter,
             .motion_vector_scale = {1.0f, 1.0f},
             .reset = reset,
             .depth_inverted = false,

@@ -168,7 +168,14 @@ std::unique_ptr<TranslationMap> InitializeTranslations(QObject* parent) {
               "download button below.\nFire Emblem: Fortune's Weave also needs "
               "EDEN_NX2_DLSS_REPLACEMENT=dlss. Without that override, its spatial workaround "
               "remains active.\nIn The Legend of Zelda: Ocarina of Time it replaces the game's "
-              "upscaler at 1x resolution scale.\nTakes effect when a game starts."));
+              "upscaler at 1x resolution scale, and jitters the scene's draws for it.\nTakes "
+              "effect when a game starts."));
+    INSERT(Settings, nvidia_dlss_mode, tr("NVIDIA DLSS Mode:"),
+           tr("What NVIDIA DLSS does with a pass that already runs at the output size, as "
+              "Ocarina of Time's anti-aliasing does with its Max Resolution add-on.\nDLAA: "
+              "anti-aliases the frame at its size, replacing the game's anti-aliasing.\nSuper "
+              "Resolution: upscales it (2560x1440 to 3840x2160). Where that is not possible, "
+              "the game's pass runs.\nTakes effect when a game starts."));
     INSERT(Settings, anti_aliasing, tr("Anti-Aliasing Method:"),
            tr("The anti-aliasing method to use.\nSMAA offers the best quality.\nFXAA "
               "can produce a more stable picture in lower resolutions."));
@@ -562,6 +569,11 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
                               PAIR(AntiAliasing, None, tr("None")),
                               PAIR(AntiAliasing, Fxaa, tr("FXAA")),
                               PAIR(AntiAliasing, Smaa, tr("SMAA")),
+                          }});
+    translations->insert({Settings::EnumMetadata<Settings::NvidiaDlssMode>::Index(),
+                          {
+                              PAIR(NvidiaDlssMode, SuperResolution, tr("Super Resolution")),
+                              PAIR(NvidiaDlssMode, Dlaa, tr("DLAA (anti-aliasing only)")),
                           }});
     translations->insert({Settings::EnumMetadata<Settings::AspectRatio>::Index(),
                           {

@@ -42,15 +42,28 @@ has DLSS for the device. FSR is not used for this game, and no environment overr
 
 - Max Resolution add-on off: the 3/4-scale pass (`e40f5efb5480e692`) is replaced and DLSS
   writes the game's output size (1080p to 1440p docked, 810p to 1080p handheld).
-- Max Resolution add-on on, docked: the full-size pass (`6bd913e1f34e83eb`) at 2560x1440 is
-  replaced by a 3840x2160 DLSS image. The game still finishes its 1440p frame. At presentation,
-  the HUD is taken from the difference between that frame and a 1440p copy of the DLSS scene,
-  and composited over the 4K scene. The 4K image skips the presentation's post-processing and
-  upscale filters.
+- Max Resolution add-on on, "NVIDIA DLSS Mode" Super Resolution (the default), docked: the
+  full-size pass (`6bd913e1f34e83eb`) at 2560x1440 is replaced by a 3840x2160 DLSS image. The
+  game still finishes its 1440p frame. At presentation, the HUD is taken from the difference
+  between that frame and a 1440p copy of the DLSS scene, and composited over the 4K scene. The
+  4K image skips the presentation's post-processing and upscale filters. At other sizes (a
+  1080p output) the game's pass runs.
+- Max Resolution add-on on, "NVIDIA DLSS Mode" DLAA: the full-size pass is replaced by DLSS at
+  the same size (DLAA), at any size, in place of the game's anti-aliasing network. The HUD is
+  drawn over it by the game as usual. The 3/4-scale pass is still upscaled.
 - The game has no motion vectors or jitter. Motion comes from the scene depth reprojected
   through this and the previous frame's camera (vertex constant buffer 3). Link's recognized
   skinned draw is replayed with both poses where his depth matches. Without his pose the frame
   keeps the camera motion. The input is tonemapped, so DLSS runs in LDR without auto exposure.
+- The host jitters the scene for DLSS: the viewports of the draws that bind the perspective
+  camera (vertex constant buffer 3, projection at 0x70) on a D32 depth buffer of the scene's
+  size get a Halton (2, 3) offset of up to half a pixel over 16 frames, and DLSS is told the
+  same offset. The depth prepass and the colour pass get the same offset, since the colour pass
+  tests EQUAL against a copy of the prepass depth. The offset starts at the scene depth's first
+  clear after an evaluation and stops when the clears outnumber twice a frame's without one (a
+  menu, a load), or when the game's own pass draws. Full-screen passes and the interface, which
+  bind no perspective camera, are not moved. `EDEN_NX2_OOT_JITTER=0` draws without jitter;
+  `-1` gives DLSS the opposite sign, for checking the convention.
 - FXAA and SMAA are skipped on frames DLSS drew.
 - Any unexpected input, a busy frame slot, a rescaled image (resolution scale other than 1x) or
   a failed evaluation leaves the game's pass to run. The log names the reason as

@@ -246,6 +246,9 @@ private:
     void TrackOcarinaActor(u64 shader_hash, bool is_indexed, bool is_indirect);
     bool TryOcarinaDlss(const ComputePipeline& pipeline, bool replace);
     void ReadOcarinaActor(struct OcarinaActorMesh& mesh);
+    void TrackOcarinaJitter();
+    void NoteOcarinaClear();
+    void NoteOcarinaEvaluation(bool done, VkExtent2D extent);
 #endif
     /// Records the uniform and storage buffers of the current draw or dispatch for the frame dump.
     bool FrameDumpBuffers(bool compute, std::span<const u64> shader_hashes);
@@ -310,6 +313,26 @@ private:
         std::array<f32, 4> origin{};
         std::array<f32, 280 * 12> bones{};
     } oot_actor, oot_previous_actor;
+    /// The sub-pixel jitter of the scene's draws for DLSS (the game renders none): added to the
+    /// viewports of the draws that bind the perspective camera on a depth buffer of the scene's
+    /// size, from the scene depth's clear after an evaluation until the next evaluation.
+    struct OcarinaJitter {
+        VkExtent2D depth_size{}; ///< The last evaluated scene's size; its depth clears count.
+        bool ready{};            ///< An evaluation ran since the scene depth was last cleared.
+        bool active{};
+        u32 clears_since_evaluation{}; ///< Scene-sized depth clears since the last evaluation.
+        u32 clears_per_frame{};        ///< Those clears in the last evaluated frame.
+        u32 phase{};
+        std::array<f32, 2> current{}; ///< This frame's offset (render pixels, -0.5 to 0.5).
+        std::array<f32, 2> applied{}; ///< The offset in the viewports now.
+        std::array<f32, 2> drawn{};   ///< The offset this frame's scene draws got.
+        u32 evaluations{};
+        /// The last camera buffer read, until the next evaluation.
+        struct {
+            GPUVAddr address{};
+            bool perspective{};
+        } camera;
+    } oot_jitter;
 #endif
     u64 render_trace_frame = 0;
     u32 render_trace_draws = 0;
